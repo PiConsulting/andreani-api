@@ -11,6 +11,7 @@ from fastapi import (APIRouter, Depends, FastAPI, File, HTTPException,
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from fastapi.responses import FileResponse
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
 from auth import get_current_account
@@ -55,7 +56,8 @@ class UploadVideoResponse(BaseModel):
 async def create_upload_file(file: UploadFile = File(...), name: str = Form(...), db: Database = Depends(get_db)):
     path = save_upload_file_tmp(file)
     job_uid = await create_processing_video_job(db, path, name, job_queue)
-    return {"path": str(path), "job_uid": str(job_uid)}
+    headers = {"Access-Control-Allow-Origin": "*"}
+    return JSONResponse(content={"path": str(path), "job_uid": str(job_uid)}, headers=headers)
 
 
 class JobsResponse(BaseModel):
