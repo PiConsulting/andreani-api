@@ -11,7 +11,6 @@ from fastapi import (APIRouter, Depends, FastAPI, File, HTTPException,
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from fastapi.responses import FileResponse
-from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
 from auth import get_current_account
@@ -27,11 +26,12 @@ SQLITE_PATH = "../sqlite.db"
 app = FastAPI()
 app.include_router(auth_router)
 app.add_middleware(CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],)
-app.add_middleware(TrustedHostMiddleware, allowed_hosts=["*.azurewebsites.net", "localhost", "127.0.0.1", "0.0.0.0"])
+                   allow_origins=["*"],
+                   allow_credentials=True,
+                   allow_methods=["*"],
+                   allow_headers=["*"])
+app.add_middleware(TrustedHostMiddleware,
+                   allowed_hosts=["*"])
 router = APIRouter(dependencies=[Depends(get_current_account)])
 
 job_queue = Queue()
@@ -56,8 +56,7 @@ class UploadVideoResponse(BaseModel):
 async def create_upload_file(file: UploadFile = File(...), name: str = Form(...), db: Database = Depends(get_db)):
     path = save_upload_file_tmp(file)
     job_uid = await create_processing_video_job(db, path, name, job_queue)
-    headers = {"Access-Control-Allow-Origin": "*"}
-    return JSONResponse(content={"path": str(path), "job_uid": str(job_uid)}, headers=headers)
+    return {"path": str(path), "job_uid": str(job_uid)}
 
 
 class JobsResponse(BaseModel):
@@ -74,7 +73,6 @@ async def get_job(job_uiid: UUID, db: Database = Depends(get_db)):
     except FileNotFoundError:
         raise HTTPException(status_code=404, detail="Job CSV not found")
     return FileResponse(path, media_type="octet/stream", filename=DOWNLOAD_CSV_NAME)
-
 
 @app.on_event("startup")
 async def startup_event():
