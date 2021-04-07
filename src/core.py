@@ -1,6 +1,6 @@
 import os
 from typing import List
-from uuid import UUID
+from uuid import UUID, uuid4
 from pydantic import parse_obj_as
 from job_process import Job, JobResponse
 from os import PathLike
@@ -36,11 +36,12 @@ def save_upload_file_tmp(upload_file: UploadFile) -> Path:
 def save_upload_file_storage(upload_file: UploadFile) -> Path:
     container_client = storage_connect()
     try:
-        blob_client = container_client.get_blob_client(upload_file.filename)
+        pathfile = str(uuid4()) + upload_file.filename
+        blob_client = container_client.get_blob_client(pathfile)
         blob_client.upload_blob(upload_file.file, blob_type="BlockBlob")
     finally:
         upload_file.file.close()
-    return Path(upload_file.filename)
+    return Path(pathfile)
 
 
 async def create_processing_video_job(db: Database, path: PathLike, name: str, job_queue: "Queue[Job]") -> UUID:

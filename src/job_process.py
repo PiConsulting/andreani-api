@@ -65,7 +65,7 @@ class JobProcessor(Thread):
             print("processing job", job)
             # result: List[str] = ml_engine.run_inference(job.file_path)
 
-            result_csv = ml_engine.run_job(job.file_path, f"{job.uid}.csv")
+            ml_engine.run_job(job.file_path, f"{job.uid}.csv")
             print("done with inference")
 
             # csv_filename = f"{job.uid}.csv"
