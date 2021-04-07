@@ -37,8 +37,10 @@ def run_job(filepath, job_uuid):
             )
             if response.status_code == 200:
                 response = response.json()
-                if response['metadata']['state']['result_state'] == "SUCCESS":
+                if response['metadata']['state'].get('result_state', '') == "SUCCESS":
                     csv_path = response['notebook_output']['result']
                     return csv_path
+                if response['metadata']['state'].get('life_cycle_state', '') == "TERMINATED":
+                    raise Exception('fail dbricks process')
             time.sleep(5)
     raise Exception('fail on check job status')
