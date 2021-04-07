@@ -24,11 +24,8 @@ from job_process import Job, JobProcessor, JobResponse
 env_path = Path(".") / ".env"
 load_dotenv(dotenv_path=env_path)
 
-if os.environ.get('DEBUG', False):
-    CSV_FOLDER = "../results/"
-else:
-    CSV_FOLDER = "/storage/files/results/"
 
+CSV_FOLDER = "../results/"
 DOWNLOAD_CSV_NAME = "codigos.csv"
 SQLITE_PATH = "../sqlite.db"
 
