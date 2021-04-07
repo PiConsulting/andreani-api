@@ -17,8 +17,8 @@ from pydantic import BaseModel
 from auth import get_current_account
 from auth import router as auth_router
 from core import (create_processing_video_job, get_job_csv, get_job_list,
-                  save_upload_file_tmp, save_upload_file_storage)
-from job_process import Job, JobProcessor, JobResponse
+                  save_upload_file_storage)
+from job_process import JobProcessor, JobResponse
 
 
 env_path = Path(".") / ".env"

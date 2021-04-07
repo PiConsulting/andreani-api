@@ -34,7 +34,7 @@ class Job(BaseModel):
     async def update_status(self, db: Database, status: JobStatusEnum):
         self.status = status
         query = "UPDATE jobs SET status = :status WHERE uid = :uid"
-        values = {"uid": str(self.uid), "status": self.status }
+        values = {"uid": str(self.uid), "status": self.status}
         await db.execute(query=query, values=values)
 
 
@@ -65,12 +65,11 @@ class JobProcessor(Thread):
             print("processing job", job)
             # result: List[str] = ml_engine.run_inference(job.file_path)
 
-            ml_engine.run_job(job.file_path, f"{job.uid}-{job.name}.csv")
+            result_csv = ml_engine.run_job(job.file_path, f"{job.uid}.csv")
             print("done with inference")
 
             # csv_filename = f"{job.uid}.csv"
             # pd.DataFrame(data={'code': result}).to_csv(os.path.join(self.csv_folder, csv_filename), index=False)
-
             print("done processing job")
             status = JobStatusEnum.done
         except Exception as err:

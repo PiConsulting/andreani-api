@@ -14,6 +14,14 @@ from azure.storage.blob import ContainerClient
 from azure.storage.blob import BlobServiceClient
 
 
+def storage_connect():
+    blob_service_client: BlobServiceClient = BlobServiceClient.from_connection_string(
+        os.environ['CONNECTION_STR'])
+    container_client: ContainerClient = blob_service_client.get_container_client(
+        os.environ['CONTAINER_NAME'])
+    return container_client
+
+
 def save_upload_file_tmp(upload_file: UploadFile) -> Path:
     try:
         suffix = Path(upload_file.filename).suffix
@@ -26,10 +34,7 @@ def save_upload_file_tmp(upload_file: UploadFile) -> Path:
 
 
 def save_upload_file_storage(upload_file: UploadFile) -> Path:
-    blob_service_client: BlobServiceClient = BlobServiceClient.from_connection_string(
-        os.environ['CONNECTION_STR'])
-    container_client: ContainerClient = blob_service_client.get_container_client(
-        os.environ['CONTAINER_NAME'])
+    container_client = storage_connect()
     try:
         blob_client = container_client.get_blob_client(upload_file.filename)
         blob_client.upload_blob(upload_file.file, blob_type="BlockBlob")
@@ -56,7 +61,13 @@ async def get_job_list(db: Database) -> List[JobResponse]:
 
 
 def get_job_csv(job_uuid: str, csv_folder: str) -> str:
+    container_client = storage_connect()
+    blob = container_client.download_blob(f"{job_uuid}.csv")
+
     file_path = os.path.join(csv_folder, f"{job_uuid}.csv")
+    with open(file_path, 'wb') as fp:
+        fp.write(blob)
+
     if not os.path.exists(file_path):
         raise FileNotFoundError(f"File {file_path} does not exist")
     return file_path

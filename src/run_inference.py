@@ -1,6 +1,7 @@
 import ml_engine
 import click
 
+
 @click.command()
 @click.argument('video_path', type=click.Path(exists=True))
 def run(video_path):

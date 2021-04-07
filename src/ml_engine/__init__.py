@@ -15,10 +15,10 @@ def run_inference(video_path: str, debug=False):
     return found_codes
 
 
-def run_job(filepath, jobname):
+def run_job(filepath, job_uuid):
     body = {"job_id": 1,
             "notebook_params": { "storage_filepath": filepath,
-                                 "storage_jobname": jobname }
+                                 "storage_jobname": job_uuid}
            }
 
     response = requests.post(
@@ -37,5 +37,6 @@ def run_job(filepath, jobname):
             response = response.json()
             if response['metadata']['state']['result_state'] == "SUCCESS":
                 csv_path = response['notebook_output']['result']
+                return csv_path
 
     return None
