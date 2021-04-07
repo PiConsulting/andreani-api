@@ -78,7 +78,7 @@ async def hello():
     return "API Andreani"
 
 
-@router.post("/upload-video/", response_model=UploadVideoResponse, dependencies=[Depends(get_current_account)])
+@router.post("/upload-video", response_model=UploadVideoResponse, dependencies=[Depends(get_current_account)])
 async def create_upload_file(file: UploadFile = File(...), name: str = Form(...), db: Database = Depends(get_db)):
     # path = save_upload_file_tmp(file)
     path = save_upload_file_storage(file)

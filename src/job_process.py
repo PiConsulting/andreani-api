@@ -1,7 +1,6 @@
 from queue import Queue
 from threading import Thread
-import time
-from typing import List, Union, Optional
+from typing import List, Optional
 from uuid import UUID, uuid4
 from databases.core import Database
 from pydantic import BaseModel, Field
@@ -9,7 +8,6 @@ from pydantic import parse_obj_as
 from enum import Enum
 import asyncio
 import ml_engine
-import pandas as pd
 from fastapi.encoders import jsonable_encoder
 import os
 import traceback
@@ -28,7 +26,6 @@ class Job(BaseModel):
     status: JobStatusEnum = JobStatusEnum.new
     file_path: str
 
-
     async def create_on_db(self, db: Database):
         query = "INSERT INTO jobs(uid, status, file_path, name) VALUES (:uid, :status, :file_path, :name)"
         values = jsonable_encoder(self)
@@ -40,11 +37,13 @@ class Job(BaseModel):
         values = {"uid": str(self.uid), "status": self.status }
         await db.execute(query=query, values=values)
 
+
 class JobResponse(Job):
     id: Optional[int] = 0
 
 
 class JobProcessor(Thread):
+
     def __init__(self, q: "Queue[Job]", db: Database, csv_folder: str):
         Thread.__init__(self, daemon=True)
         self.q = q
