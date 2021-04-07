@@ -64,11 +64,13 @@ class JobProcessor(Thread):
         try:
             asyncio.run(job.update_status(self.db, JobStatusEnum.in_progress))
             print("processing job", job)
-            result: List[str] = ml_engine.run_inference(job.file_path)
+            # result: List[str] = ml_engine.run_inference(job.file_path)
+
+            ml_engine.run_job(job.file_path, f"{job.uid}-{job.name}.csv")
             print("done with inference")
 
-            csv_filename = f"{job.uid}.csv"
-            pd.DataFrame(data={'code': result}).to_csv(os.path.join(self.csv_folder, csv_filename), index=False)
+            # csv_filename = f"{job.uid}.csv"
+            # pd.DataFrame(data={'code': result}).to_csv(os.path.join(self.csv_folder, csv_filename), index=False)
 
             print("done processing job")
             status = JobStatusEnum.done

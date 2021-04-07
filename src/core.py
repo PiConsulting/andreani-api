@@ -1,3 +1,4 @@
+import os
 from typing import List
 from uuid import UUID
 from pydantic import parse_obj_as
@@ -10,7 +11,9 @@ from pathlib import Path
 from tempfile import NamedTemporaryFile
 from fastapi import UploadFile
 from databases import Database
-import os
+from azure.storage.blob import ContainerClient
+from azure.storage.blob import BlobServiceClient
+
 
 def save_upload_file_tmp(upload_file: UploadFile) -> Path:
     try:
@@ -22,6 +25,20 @@ def save_upload_file_tmp(upload_file: UploadFile) -> Path:
         upload_file.file.close()
     return tmp_path
 
+
+def save_upload_file_storage(upload_file: UploadFile) -> Path:
+    blob_service_client: BlobServiceClient = BlobServiceClient.from_connection_string(
+        os.environ['CONNECTION_STR'])
+    container_client: ContainerClient = blob_service_client.get_container_client(
+        os.environ['CONTAINER_NAME'])
+    try:
+        blob_client = container_client.get_blob_client(upload_file.filename)
+        blob_client.upload_blob(upload_file.file, blob_type="BlockBlob")
+    finally:
+        upload_file.file.close()
+    return f"{upload_file.file_name}"
+
+
 async def create_processing_video_job(db: Database, path: PathLike, name: str, job_queue: "Queue[Job]") -> UUID:
     print(path)
     job = Job(file_path=str(path), name = name)
@@ -30,12 +47,14 @@ async def create_processing_video_job(db: Database, path: PathLike, name: str, j
     print("Done create_processing_video_job")
     return job.uid
 
+
 async def get_job_list(db: Database) -> List[JobResponse]:
     query = "SELECT ROWID as id, * FROM jobs"
     jobs = await db.fetch_all(query=query)
     jobs = parse_obj_as(List[JobResponse], jobs)
     jobs.reverse()
     return jobs
+
 
 def get_job_csv(job_uuid: str, csv_folder: str) -> str:
     file_path = os.path.join(csv_folder, f"{job_uuid}.csv")
