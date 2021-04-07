@@ -67,7 +67,7 @@ def get_job_csv(job_uuid: str, csv_folder: str) -> str:
 
     file_path = os.path.join(csv_folder, f"{job_uuid}.csv")
     with open(file_path, 'wb') as fp:
-        fp.write(blob)
+        fp.write(blob.readall())
 
     if not os.path.exists(file_path):
         raise FileNotFoundError(f"File {file_path} does not exist")
